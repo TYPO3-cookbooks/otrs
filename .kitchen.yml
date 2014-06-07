@@ -1,0 +1,16 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: debian-7.4
+    run_list:
+    - recipe[apt::default]
+
+suites:
+  - name: default
+    run_list:
+      - recipe[otrs::default]
