@@ -98,6 +98,15 @@ link "#{node.otrs.prefix}/otrs" do
   to "#{node.otrs.prefix}/otrs-#{node.otrs.version}"
 end
 
+ruby_block "#{node.otrs.prefix}/otrs/scripts/apache2-perl-startup.pl" do
+  block do
+    # replace occurrences of /opt/otrs/ in the startup file with the actual path
+    file = Chef::Util::FileEdit.new("#{node.otrs.prefix}/otrs/scripts/apache2-perl-startup.pl")
+    file.search_file_replace(/\/opt\/otrs\//, "#{node.otrs.prefix}/otrs/")
+    file.write_file
+  end unless node['otrs']['prefix'].equal?("/opt")
+end
+
 ############################
 # MySql setup
 
@@ -227,11 +236,6 @@ apache_module "ssl"
 cpan_module "Apache::DBI"
 package "libapache2-mod-perl2"
 
-template "#{node.otrs.prefix}/otrs/scripts/apache2-perl-startup.pl" do
-  source "apache2-perl-startup.pl.erb"
-  owner "root"
-  mode "655"
-end
 
 # create vhost
 web_app node['otrs']['fqdn'] do
