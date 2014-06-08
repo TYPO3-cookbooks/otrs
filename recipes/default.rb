@@ -38,42 +38,31 @@ node.set_unless['otrs']['kernel_config']['system_id'] = rand(9999)
 
 include_recipe "perl"
 
+include_recipe "build-essential"
+
 # for GD
 package "libgd-gd2-perl"
 # for XML::Parser
 package "libexpat1-dev"
-
+# for Net::SSL
+package "libssl-dev"
 
 #deactivated
 # Net::IMAP::Simple::SSL
 
 # Required Perl modules
 %w{
-  Compress::Zlib
-  Crypt::SSLeay
-  DBI
-  DBD::mysql
-  Digest::MD5
-  Crypt::PasswdMD5
-  CSS::Minifier
   GD
   GD::Text
-  GD::Text::Align
   GD::Graph
-  GD::Graph::lines
-  IO::Socket::SSL
-  JavaScript::Minifier
   JSON::XS
-  LWP::UserAgent
   Mail::IMAPClient
-  MIME::Base64
   Net::DNS
   Net::LDAP
   Net::SSL
   Net::SMTP::SSL
   Net::SMTP::TLS::ButMaintained
   PDF::API2
-  Text::CSV_XS
   XML::Parser
   YAML::XS
 }.each do |mod|
@@ -114,10 +103,9 @@ end
 
 # Install MySQL server
 
-include_recipe "build-essential"
 include_recipe "mysql::server"
 include_recipe "mysql::client"
-include_recipe "database"
+include_recipe "database::mysql"
 
 # generate the password
 ::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
@@ -125,59 +113,38 @@ node.set_unless['otrs']['database']['password'] = secure_password
 
 mysql_connection_info = {:host => "localhost", :username => 'root', :password => node['mysql']['server_root_password']}
 
+# create otrs database
+mysql_database 'otrs' do
+  connection mysql_connection_info
+  action :create
+  notifies :run, "execute[otrs_schema]", :immediately
+  notifies :run, "execute[otrs_initial_insert]", :immediately
+  notifies :run, "execute[otrs_schema-post]", :immediately
+end
 
-begin
-  gem_package "mysql" do
-    action :install
-  end
-  Gem.clear_paths
-  require 'mysql'
-  m=Mysql.new("localhost","root",node['mysql']['server_root_password'])
+# db user
+mysql_database_user 'otrs' do
+  connection mysql_connection_info
+  password node['otrs']['database']['password']
+  database_name 'otrs'
+  host 'localhost'
+  privileges [:select,:update,:insert,:create,:alter,:drop,:delete]
+  action :grant
+end
 
-  if m.list_dbs.include?("otrs") == false
-    # create otrs database
-    mysql_database 'otrs' do
-      connection mysql_connection_info
-      action :create
-      notifies :run, "execute[otrs_schema]", :immediately
-      notifies :run, "execute[otrs_initial_insert]", :immediately
-      notifies :run, "execute[otrs_schema-post]", :immediately
-    end
+execute "otrs_schema" do
+  command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-schema.mysql.sql"
+  action :nothing
+end
 
-    # create otrs user
-    mysql_database_user 'otrs' do
-      connection mysql_connection_info
-      password node['otrs']['database']['password']
-      action :create
-    end
+execute "otrs_initial_insert" do
+  command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-initial_insert.mysql.sql"
+  action :nothing
+end
 
-    # Grant otrs
-    mysql_database_user 'otrs' do
-      connection mysql_connection_info
-      password node['otrs']['database']['password']
-      database_name 'otrs'
-      host 'localhost'
-      privileges [:select,:update,:insert,:create,:alter,:drop,:delete]
-      action :grant
-    end
-    
-    execute "otrs_schema" do
-      command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-schema.mysql.sql"
-      action :nothing
-    end
-    
-    execute "otrs_initial_insert" do
-      command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-initial_insert.mysql.sql"
-      action :nothing
-    end
-    
-    execute "otrs_schema-post" do
-      command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-schema-post.mysql.sql"
-      action :nothing
-    end
-  end
-rescue LoadError
-  Chef::Log.info("Missing gem 'mysql'")
+execute "otrs_schema-post" do
+  command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-schema-post.mysql.sql"
+  action :nothing
 end
 
 ##########################
@@ -281,7 +248,7 @@ end
 #########################
 # Cron jobs
 
-cron "DeleteCache" do
+cron_d "DeleteCache" do
   hour "0"
   minute "20"
   weekday "0"
@@ -289,7 +256,7 @@ cron "DeleteCache" do
   user "otrs"
 end
 
-cron "LoaderCache" do
+cron_d "LoaderCache" do
   hour "0"
   minute "30"
   weekday "0"
@@ -297,65 +264,65 @@ cron "LoaderCache" do
   user "otrs"
 end
 
-#cron "fetchmail" do
+#cron_d "fetchmail" do
 #  minute "*/5"
 #  command "[ -x /usr/bin/fetchmail ] && /usr/bin/fetchmail -a >> /dev/null"
 #  user "otrs"
 #end
 
-#cron "fetchmail_ssl" do
+#cron_d "fetchmail_ssl" do
 #  minute "*/5"
 #  command "[ -x /usr/bin/fetchmail ] && /usr/bin/fetchmail -a --ssl >> /dev/null"
 #  user "otrs"
 #end
 
-cron "GenericAgent_db" do
+cron_d "GenericAgent_db" do
   minute "*/10"
   command "#{node.otrs.prefix}/otrs/bin/otrs.GenericAgent.pl -c db >> /dev/null"
   user "otrs"
 end
 
-cron "GenericAgent" do
+cron_d "GenericAgent" do
   minute "*/20"
   command "#{node.otrs.prefix}/otrs/bin/otrs.GenericAgent.pl >> /dev/null"
   user "otrs"
 end
 
-cron "PendingJobs" do
+cron_d "PendingJobs" do
   hour "*/2"
   minute "45"
   command "#{node.otrs.prefix}/otrs/bin/otrs.PendingJobs.pl >> /dev/null"
   user "otrs"
 end
 
-cron "cleanup" do
+cron_d "cleanup" do
   hour "0"
   minute "10"
   command "#{node.otrs.prefix}/otrs/bin/otrs.cleanup >> /dev/null"
   user "otrs"
 end
 
-cron "PostMasterMailbox" do
+cron_d "PostMasterMailbox" do
   minute "*/5"
   command "#{node.otrs.prefix}/otrs/bin/otrs.PostMasterMailbox.pl >> /dev/null"
   user "otrs"
 end
 
-cron "RebuildTicketIndex" do
+cron_d "RebuildTicketIndex" do
   hour "1"
   minute "1"
   command "#{node.otrs.prefix}/otrs/bin/otrs.RebuildTicketIndex.pl >> /dev/null"
   user "otrs"
 end
 
-cron "DeleteSessionIDs" do
+cron_d "DeleteSessionIDs" do
   hour "*/2"
   minute "55"
   command "#{node.otrs.prefix}/otrs/bin/otrs.DeleteSessionIDs.pl --expired >> /dev/null"
   user "otrs"
 end
 
-cron "UnlockTickets" do
+cron_d "UnlockTickets" do
   minute "35"
   command "#{node.otrs.prefix}/otrs/bin/otrs.UnlockTickets.pl --timeout >> /dev/null"
   user "otrs"
