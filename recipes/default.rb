@@ -20,6 +20,7 @@
 ::Chef::Recipe.send(:include, OTRS::Helpers)
 ::Chef::Resource::RemoteFile.send(:include, OTRS::Helpers)
 
+otrs_path = node['otrs']['prefix'] + "/otrs"
 
 ############################
 # System configuration
@@ -27,7 +28,7 @@
 # create a unix user account for OTRS
 user "otrs" do
   comment "OTRS user"
-  home "#{node.otrs.prefix}/otrs"
+  home otrs_path
   shell "/bin/bash"
   group node['apache']['group']
   system true
@@ -76,36 +77,37 @@ end
 # Download & extract OTRS
 
 # Download OTRS source code
-remote_file "#{Chef::Config[:file_cache_path]}/otrs-#{node.otrs.version}.tar.gz" do
-  source "http://ftp.otrs.org/pub/otrs/otrs-#{node.otrs.version}.tar.gz"
+remote_file "#{Chef::Config[:file_cache_path]}/otrs-#{node['otrs'].version}.tar.gz" do
+  source "http://ftp.otrs.org/pub/otrs/otrs-#{node['otrs'].version}.tar.gz"
   mode "0644"
   action :create
   notifies :run, "script[extract]", :immediately
-  not_if { installed_version_matches?(node.otrs.version) }
+  not_if { installed_version_matches?(node['otrs'].version) }
 end
 
-# Extract downloaded file
+# Extract downloaded file to #{node['otrs']['prefix']}/otrs-x.y.z/
 script "extract" do
   interpreter "bash"
   user "root"
   cwd node['otrs']['prefix']
   action :nothing
   code <<-EOH
-  tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node.otrs.version}.tar.gz
+  tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node['otrs'].version}.tar.gz
   EOH
   notifies :run, "execute[SetPermissions]"
 end
 
 # Create symlink from otrs/ to otrs-a.b.c./
-link "#{node.otrs.prefix}/otrs" do
-  to "#{node.otrs.prefix}/otrs-#{node.otrs.version}"
+link otrs_path do
+  to "#{otrs_path}-#{node['otrs'].version}"
 end
 
-ruby_block "#{node.otrs.prefix}/otrs/scripts/apache2-perl-startup.pl" do
+# this file has the path to OTRS hardcoded
+ruby_block "#{otrs_path}/scripts/apache2-perl-startup.pl" do
   block do
     # replace occurrences of /opt/otrs/ in the startup file with the actual path
-    file = Chef::Util::FileEdit.new("#{node.otrs.prefix}/otrs/scripts/apache2-perl-startup.pl")
-    file.search_file_replace(/\/opt\/otrs\//, "#{node.otrs.prefix}/otrs/")
+    file = Chef::Util::FileEdit.new("#{otrs_path}/scripts/apache2-perl-startup.pl")
+    file.search_file_replace(/\/opt\/otrs\//, otrs_path)
     file.write_file
   end unless node['otrs']['prefix'].equal?("/opt")
 end
@@ -145,17 +147,17 @@ mysql_database_user 'otrs' do
 end
 
 execute "otrs_schema" do
-  command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-schema.mysql.sql"
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/otrs-schema.mysql.sql"
   action :nothing
 end
 
 execute "otrs_initial_insert" do
-  command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-initial_insert.mysql.sql"
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/otrs-initial_insert.mysql.sql"
   action :nothing
 end
 
 execute "otrs_schema-post" do
-  command "/usr/bin/mysql -u root #{node.otrs.database.name} -p#{node.mysql.server_root_password} < #{node.otrs.prefix}/otrs/scripts/database/otrs-schema-post.mysql.sql"
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/otrs-schema-post.mysql.sql"
   action :nothing
 end
 
@@ -163,7 +165,7 @@ end
 # Configuration files
 
 # install OTRS configuration file
-template "#{node.otrs.prefix}/otrs/Kernel/Config.pm" do
+template "#{otrs_path}/Kernel/Config.pm" do
   source "Config.pm.erb"
   owner "otrs"
   group node['apache']['group']
@@ -173,7 +175,7 @@ template "#{node.otrs.prefix}/otrs/Kernel/Config.pm" do
   notifies :run, "execute[DeleteCache]"
 end
 
-template "#{node.otrs.prefix}/otrs/Kernel/Config/GenericAgent.pm" do
+template "#{otrs_path}/Kernel/Config/GenericAgent.pm" do
   source "GenericAgent.pm.erb"
   owner "otrs"
   group node['apache']['group']
@@ -183,7 +185,7 @@ template "#{node.otrs.prefix}/otrs/Kernel/Config/GenericAgent.pm" do
   notifies :run, "execute[DeleteCache]"
 end
 
-template "#{node.otrs.prefix}/otrs/Kernel/Config/Files/ZZZAuto.pm" do
+template "#{otrs_path}/Kernel/Config/Files/ZZZAuto.pm" do
   source "SysConfig.pm"
   owner "otrs"
   group node['apache']['group']
@@ -198,22 +200,22 @@ end
 
 # Set file system permissions
 execute "SetPermissions" do
-  command "bin/otrs.SetPermissions.pl #{node.otrs.prefix}/otrs-#{node.otrs.version} --otrs-user=otrs --otrs-group=#{node.apache.group} --web-user=#{node.apache.user} --web-group=#{node.apache.group}"
-  cwd "#{node.otrs.prefix}/otrs"
+  command "bin/otrs.SetPermissions.pl #{otrs_path}-#{node['otrs']['version']} --otrs-user=otrs --otrs-group=#{node['apache']['group']} --web-user=#{node['apache']['user']} --web-group=#{node['apache']['group']}"
+  cwd "#{otrs_path}"
   user "root"
   action :nothing
 end
 
 execute "RebuildConfig" do
   command "bin/otrs.RebuildConfig.pl"
-  cwd "#{node.otrs.prefix}/otrs"
+  cwd "#{otrs_path}"
   user "otrs"
   action :nothing
 end
 
 execute "DeleteCache" do
   command "bin/otrs.DeleteCache.pl"
-  cwd "#{node.otrs.prefix}/otrs"
+  cwd "#{otrs_path}"
   user "otrs"
   action :nothing
 end
@@ -224,7 +226,7 @@ end
 node['otrs']['packages'].each do |package|
   execute "ReInstallPackage_#{package}" do
     command "bin/otrs.PackageManager.pl -a reinstall -p #{package}"
-    cwd "#{node.otrs.prefix}/otrs"
+    cwd "#{otrs_path}"
     user "otrs"
     only_if "bin/otrs.PackageManager.pl -a list | grep #{package}"
   end
@@ -243,8 +245,8 @@ package "libapache2-mod-perl2"
 # create vhost
 web_app node['otrs']['fqdn'] do
   server_name node['otrs']['fqdn']
-  server_aliases ["www.#{node.otrs.fqdn}"]
-  docroot "#{node.otrs.prefix}/otrs-#{node.otrs.version}"
+  server_aliases ["www.#{node['otrs'].fqdn}"]
+  docroot "#{otrs_path}-#{node['otrs'].version}"
 end
 
 # Disable Apache default site
@@ -259,7 +261,7 @@ cron_d "DeleteCache" do
   hour "0"
   minute "20"
   weekday "0"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.DeleteCache.pl --expired >> /dev/null"
+  command "#{otrs_path}/bin/otrs.DeleteCache.pl --expired >> /dev/null"
   user "otrs"
 end
 
@@ -267,7 +269,7 @@ cron_d "LoaderCache" do
   hour "0"
   minute "30"
   weekday "0"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.LoaderCache.pl -o delete >> /dev/null"
+  command "#{otrs_path}/bin/otrs.LoaderCache.pl -o delete >> /dev/null"
   user "otrs"
 end
 
@@ -285,52 +287,52 @@ end
 
 cron_d "GenericAgent_db" do
   minute "*/10"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.GenericAgent.pl -c db >> /dev/null"
+  command "#{otrs_path}/bin/otrs.GenericAgent.pl -c db >> /dev/null"
   user "otrs"
 end
 
 cron_d "GenericAgent" do
   minute "*/20"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.GenericAgent.pl >> /dev/null"
+  command "#{otrs_path}/bin/otrs.GenericAgent.pl >> /dev/null"
   user "otrs"
 end
 
 cron_d "PendingJobs" do
   hour "*/2"
   minute "45"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.PendingJobs.pl >> /dev/null"
+  command "#{otrs_path}/bin/otrs.PendingJobs.pl >> /dev/null"
   user "otrs"
 end
 
 cron_d "cleanup" do
   hour "0"
   minute "10"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.cleanup >> /dev/null"
+  command "#{otrs_path}/bin/otrs.cleanup >> /dev/null"
   user "otrs"
 end
 
 cron_d "PostMasterMailbox" do
   minute "*/5"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.PostMasterMailbox.pl >> /dev/null"
+  command "#{otrs_path}/bin/otrs.PostMasterMailbox.pl >> /dev/null"
   user "otrs"
 end
 
 cron_d "RebuildTicketIndex" do
   hour "1"
   minute "1"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.RebuildTicketIndex.pl >> /dev/null"
+  command "#{otrs_path}/bin/otrs.RebuildTicketIndex.pl >> /dev/null"
   user "otrs"
 end
 
 cron_d "DeleteSessionIDs" do
   hour "*/2"
   minute "55"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.DeleteSessionIDs.pl --expired >> /dev/null"
+  command "#{otrs_path}/bin/otrs.DeleteSessionIDs.pl --expired >> /dev/null"
   user "otrs"
 end
 
 cron_d "UnlockTickets" do
   minute "35"
-  command "#{node.otrs.prefix}/otrs/bin/otrs.UnlockTickets.pl --timeout >> /dev/null"
+  command "#{otrs_path}/bin/otrs.UnlockTickets.pl --timeout >> /dev/null"
   user "otrs"
 end
