@@ -201,21 +201,21 @@ end
 # Set file system permissions
 execute "SetPermissions" do
   command "bin/otrs.SetPermissions.pl #{otrs_path}-#{node['otrs']['version']} --otrs-user=otrs --otrs-group=#{node['apache']['group']} --web-user=#{node['apache']['user']} --web-group=#{node['apache']['group']}"
-  cwd "#{otrs_path}"
+  cwd otrs_path
   user "root"
   action :nothing
 end
 
 execute "RebuildConfig" do
   command "bin/otrs.RebuildConfig.pl"
-  cwd "#{otrs_path}"
+  cwd otrs_path
   user "otrs"
   action :nothing
 end
 
 execute "DeleteCache" do
   command "bin/otrs.DeleteCache.pl"
-  cwd "#{otrs_path}"
+  cwd otrs_path
   user "otrs"
   action :nothing
 end
@@ -226,7 +226,7 @@ end
 node['otrs']['packages'].each do |package|
   execute "ReInstallPackage_#{package}" do
     command "bin/otrs.PackageManager.pl -a reinstall -p #{package}"
-    cwd "#{otrs_path}"
+    cwd otrs_path
     user "otrs"
     only_if "bin/otrs.PackageManager.pl -a list | grep #{package}"
   end
