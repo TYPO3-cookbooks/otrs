@@ -4,7 +4,7 @@
 
 default['otrs']['version'] = "3.2.16"
 
-default['otrs']['fqdn'] = fqdn
+default['otrs']['fqdn'] = node['fqdn']
 
 default['otrs']['prefix'] = "/usr/local"
 
