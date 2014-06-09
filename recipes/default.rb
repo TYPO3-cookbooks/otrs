@@ -73,7 +73,7 @@ end
 # Download & extract OTRS
 
 # Download OTRS source code
-remote_file "#{node.otrs.prefix}/otrs-#{node.otrs.version}.tar.gz" do
+remote_file "#{Chef::Config[:file_cache_path]}/otrs-#{node.otrs.version}.tar.gz" do
   source "http://ftp.otrs.org/pub/otrs/otrs-#{node.otrs.version}.tar.gz"
   mode "0644"
   action :create_if_missing
@@ -87,7 +87,7 @@ script "extract" do
   cwd node['otrs']['prefix']
   action :nothing
   code <<-EOH
-  tar xfz #{node.otrs.prefix}/otrs-#{node.otrs.version}.tar.gz
+  tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node.otrs.version}.tar.gz
   EOH
   notifies :run, "execute[SetPermissions]"
 end
