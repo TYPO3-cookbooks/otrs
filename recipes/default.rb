@@ -47,11 +47,9 @@ package "libexpat1-dev"
 # for Net::SSL
 package "libssl-dev"
 
-#deactivated
-# Net::IMAP::Simple::SSL
-
 # Required Perl modules
 %w{
+  Crypt::Eksblowfish::Bcrypt
   GD
   GD::Text
   GD::Graph
@@ -63,6 +61,7 @@ package "libssl-dev"
   Net::SMTP::SSL
   Net::SMTP::TLS::ButMaintained
   PDF::API2
+  Text::CSV_XS
   XML::Parser
   YAML::XS
 }.each do |mod|
