@@ -17,6 +17,9 @@
 # limitations under the License.
 #
 
+::Chef::Recipe.send(:include, OTRS::Helpers)
+::Chef::Resource::RemoteFile.send(:include, OTRS::Helpers)
+
 
 ############################
 # System configuration
@@ -76,8 +79,9 @@ end
 remote_file "#{Chef::Config[:file_cache_path]}/otrs-#{node.otrs.version}.tar.gz" do
   source "http://ftp.otrs.org/pub/otrs/otrs-#{node.otrs.version}.tar.gz"
   mode "0644"
-  action :create_if_missing
+  action :create
   notifies :run, "script[extract]", :immediately
+  not_if { installed_version_matches?(node.otrs.version) }
 end
 
 # Extract downloaded file
