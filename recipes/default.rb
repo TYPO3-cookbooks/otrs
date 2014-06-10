@@ -77,12 +77,12 @@ end
 # Download & extract OTRS
 
 # Download OTRS source code
-remote_file "#{Chef::Config[:file_cache_path]}/otrs-#{node['otrs'].version}.tar.gz" do
-  source "http://ftp.otrs.org/pub/otrs/otrs-#{node['otrs'].version}.tar.gz"
+remote_file "#{Chef::Config[:file_cache_path]}/otrs-#{node['otrs']['version']}.tar.gz" do
+  source "http://ftp.otrs.org/pub/otrs/otrs-#{node['otrs']['version']}.tar.gz"
   mode "0644"
   action :create
   notifies :run, "script[extract]", :immediately
-  not_if { installed_version_matches?(node['otrs'].version) }
+  not_if { installed_version_matches?(node['otrs']['version']) }
 end
 
 # Extract downloaded file to #{node['otrs']['prefix']}/otrs-x.y.z/
@@ -246,7 +246,7 @@ package "libapache2-mod-perl2"
 web_app node['otrs']['fqdn'] do
   server_name node['otrs']['fqdn']
   server_aliases ["www.#{node['otrs'].fqdn}"]
-  docroot "#{otrs_path}-#{node['otrs'].version}"
+  docroot "#{otrs_path}-#{node['otrs']['version']}"
 end
 
 # Disable Apache default site
