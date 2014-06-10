@@ -1,18 +1,25 @@
 module OTRS
   module Helpers
 
+    # Returns if OTRS is already installed
+    #
+    # @return [Boolean]
+    def installed?
+      symlink_path = node['otrs']['prefix'] + "/otrs"
+      File.symlink?(symlink_path)
+    end
+
     # Returns the currently installed version of OTRS
     #
     # @return [String]
-    def installed_version?()
+    def installed_version?
       symlink_path = node['otrs']['prefix'] + "/otrs"
 
-      if File.symlink?(symlink_path)
+      if installed?
         symlink_target = File.readlink(symlink_path)
-        version = symlink_target.sub(/.*-/, '')
-        return version
+        symlink_target.sub(/.*-/, '')
       else
-        return nil
+        nil
       end
     end
 
@@ -21,6 +28,23 @@ module OTRS
     # @return [Boolean]
     def installed_version_matches?(version)
       installed_version? == version
+    end
+
+    # Returns the minor version of a given version number (a.b from a.b.c)
+    #
+    # @return [String]
+    def minor_version(version = nil)
+      version ||= installed_version?
+      return "0.0" if version.nil?
+
+      version.sub(/\.\d+$/, '')
+    end
+
+    # Checks, if the upgrade from version from to version to is a patch-level upgrade.
+    # we do not use Chef::VersionConstraint, as a patch-level downgrade should be also possible
+    def patchlevel_upgrade?(to)
+      nil unless installed?
+      minor_version(installed_version?) == minor_version(to)
     end
 
   end

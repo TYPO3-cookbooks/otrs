@@ -18,7 +18,7 @@
 #
 
 ::Chef::Recipe.send(:include, OTRS::Helpers)
-::Chef::Resource::RemoteFile.send(:include, OTRS::Helpers)
+::Chef::Resource.send(:include, OTRS::Helpers)
 
 otrs_path = node['otrs']['prefix'] + "/otrs"
 
@@ -92,24 +92,42 @@ script "extract" do
   cwd node['otrs']['prefix']
   action :nothing
   code <<-EOH
-  tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node['otrs'].version}.tar.gz
+  tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node['otrs']['version']}.tar.gz
   EOH
   notifies :run, "execute[SetPermissions]"
 end
 
 # Create symlink from otrs/ to otrs-a.b.c./
 link otrs_path do
-  to "#{otrs_path}-#{node['otrs'].version}"
+  to "#{otrs_path}-#{node['otrs']['version']}"
 end
+
 
 # this file has the path to OTRS hardcoded
 ruby_block "#{otrs_path}/scripts/apache2-perl-startup.pl" do
   block do
     # replace occurrences of /opt/otrs/ in the startup file with the actual path
     file = Chef::Util::FileEdit.new("#{otrs_path}/scripts/apache2-perl-startup.pl")
-    file.search_file_replace(/\/opt\/otrs\//, otrs_path)
+    file.search_file_replace(/\/opt\/otrs/, otrs_path)
     file.write_file
   end unless node['otrs']['prefix'].equal?("/opt")
+end
+
+###########################
+# OTRS upgrade
+
+# are we updating to a newer version?
+if installed? && ! installed_version_matches?(node['otrs']['version'])
+  update_type = patchlevel_upgrade?(node['otrs']['version']) ? "patch" : "minor"
+
+  log "upgrade" do
+    message "Upgrading OTRS from #{installed_version?} to #{node['otrs']['version']} (#{update_type})"
+  end
+
+  # minor version is 3.2, 3.3 or so..
+  bash "#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}.pl" do
+    user node['otrs']['user']
+  end
 end
 
 ############################
