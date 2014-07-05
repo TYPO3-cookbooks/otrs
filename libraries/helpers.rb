@@ -1,12 +1,18 @@
 module OTRS
   module Helpers
 
+    # Returns the path to OTRS
+    #
+    # @return [String]
+    def otrs_path
+      node['otrs']['prefix'] + "/otrs"
+    end
+
     # Returns if OTRS is already installed
     #
     # @return [Boolean]
     def installed?
-      symlink_path = node['otrs']['prefix'] + "/otrs"
-      File.symlink?(symlink_path)
+      File.symlink?(otrs_path)
     end
 
     # Returns the currently installed version of OTRS
@@ -46,6 +52,5 @@ module OTRS
       nil unless installed?
       minor_version(installed_version?) == minor_version(to)
     end
-
   end
 end

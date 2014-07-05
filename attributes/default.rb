@@ -1,12 +1,8 @@
-#
-# Cookbook Name:: otrs
-# Attributes:: default
-
-default['otrs']['version'] = "3.2.16"
+default['otrs']['version'] = "3.3.7"
 
 default['otrs']['fqdn'] = node['fqdn']
 
-default['otrs']['prefix'] = "/usr/local"
+default['otrs']['prefix'] = "/opt"
 
 default['otrs']['database']['host'] = "localhost"
 default['otrs']['database']['user'] = "otrs"
