@@ -1,9 +1,6 @@
 ---
 driver:
   name: vagrant
-  network:
-  - ["forwarded_port", {guest: 80, host: 8084}]
-  - ["private_network", {ip: "192.168.33.33"}]
 
 provisioner:
   name: chef_zero
@@ -25,3 +22,7 @@ suites:
   - name: default
     run_list:
       - recipe[otrs::default]
+    driver_config:
+      network:
+      - ["forwarded_port", {guest: 80, host: 8085}]
+      - ["private_network", {ip: "192.168.33.34"}]
