@@ -15,4 +15,8 @@ default['otrs']['kernel_config']['system_id'] = nil
 
 default['otrs']['packages'] = ["iPhoneHandle", "Support"]
 
-default['apache']['listen_ports'] = [ 80 ]
+# these are at least the default paths for Debian
+default['otrs']['apache']['ssl_cert'] = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+default['otrs']['apache']['ssl_key'] = "/etc/ssl/private/ssl-cert-snakeoil.key"
+
+default['apache']['listen_ports'] = [80, 443]

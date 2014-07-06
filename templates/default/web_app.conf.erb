@@ -1,10 +1,22 @@
 <VirtualHost *:80>
   ServerName <%= @params[:server_name] %>
-  ServerAlias <% @params[:server_aliases].each do |a| %><%= a %> <% end %>
+  ServerAlias <% @params[:server_aliases].each do |a| %><%= "#{a}" %> <% end %>
+  
+  RewriteEngine On
+  RewriteRule ^/(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:443>
+  ServerName <%= @params[:server_name] %>
+  ServerAlias <% @params[:server_aliases].each do |a| %><%= "#{a}" %> <% end %>
   DocumentRoot <%= node[:otrs][:prefix] %>/otrs/var/httpd/htdocs/
   
   DirectoryIndex index.pl index.html index.html
  
+  SSLEngine on
+  SSLCertificateFile    <%= node[:otrs][:apache][:ssl_cert] %>
+  SSLCertificateKeyFile <%= node[:otrs][:apache][:ssl_key] %>
+  
   LogLevel info
   ErrorLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-error.log
   CustomLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-access.log combined
