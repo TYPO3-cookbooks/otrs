@@ -1,42 +1,66 @@
-# Description
+Description
+===========
 
-Installs/Configures OTRS
+This cookbook deploys OTRS (Open Ticket Request System) through Chef.
 
-# Requirements
+Apache HTTPD as well as MySQL is automatically installed an configured.
 
-## Platform:
 
-*No platforms defined*
+Requirements
+============
 
-## Cookbooks:
+Platform
+--------
 
-* apache2
-* build-essential
-* database
-* mysql
-* perl
+* Debian, Ubuntu
+* others untested, but could work
 
-# Attributes
+Mail Server
+-----------
 
-* `node['otrs']['version']`
-* `node['otrs']['fqdn']` -  Defaults to `fqdn`.
-* `node['otrs']['prefix']` -  Defaults to `/usr/local`.
-* `node['otrs']['database']['host']` -  Defaults to `localhost`.
-* `node['otrs']['database']['user']` -  Defaults to `otrs`.
-* `node['otrs']['database']['password']` -  Defaults to `nil`.
-* `node['otrs']['database']['name']` -  Defaults to `otrs`.
-* `node['otrs']['kernel_config']['email']` -  Defaults to `otrs@otrs.example.org`.
-* `node['otrs']['kernel_config']['organization']` -  Defaults to `Example Association`.
-* `node['otrs']['kernel_config']['system_id']` -  Defaults to `nil`.
-* `node['otrs']['packages']` -  Defaults to `[ ... ]`.
-* `node[:apache][:listen_ports]` -  Defaults to `[ ... ]`.
+Please install your preferred MTA (e.g. Postfix) on your own.
 
-# Recipes
 
-* otrs::default
+Attributes
+==========
 
-# License and Maintainer
+* `node['otrs']['version']` - Version of OTRS to deploy
+* `node['otrs']['fqdn']` - Hostname used by OTRS
+* `node['otrs']['prefix']` - File system path to install OTRS to (default `/opt`)
 
-Maintainer:: TYPO3 Association (<steffen.gebert@typo3.org>)
+* `node['otrs']['kernel_config']['organization']` - Organization.
+* `node['otrs']['kernel_config']['email']` - Admin email address.
+* `node['otrs']['kernel_config']['system_id']` - System ID that should be more or less unique.
 
-License:: Apache 2.0
+* `node['otrs']['database']['host']` - Database host
+* `node['otrs']['database']['user']` - Database user
+* `node['otrs']['database']['password']` - Database password
+* `node['otrs']['database']['name']` - Database name
+
+
+Usage
+=====
+
+* If you modify the SysConfig through the OTRS user interface, make sure to export the new configuration and put it into `templates/host-otrs.example.com/SysConfig.pm`, as it will otherwise be overwritten or lost during an upgrade.
+* Patch-level updates of OTRS should work flawlessly.
+* Minor updates are detected and the DBUpdate scripts are executed. This might work, sometimes missing DB indexes make the update fail.
+
+
+License and Authors
+===================
+
+Author:: Steffen Gebert <steffen.gebert@typo3.org>
+
+Copyright:: 2012-2014, Steffen Gebert / TYPO3 Association
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
