@@ -38,7 +38,8 @@ template "#{otrs_path}/Kernel/Config/GenericAgent.pm" do
   notifies :run, "execute[DeleteCache]"
 end
 
-template "#{otrs_path}/Kernel/Config/Files/ZZZAuto.pm" do
+template "SysConfig" do
+  path "#{otrs_path}/Kernel/Config/Files/ZZZAuto.pm"
   source "SysConfig.pm"
   owner "otrs"
   group node['apache']['group']
