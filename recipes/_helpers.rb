@@ -29,6 +29,7 @@ execute "RebuildConfig" do
   command "bin/otrs.RebuildConfig.pl"
   cwd otrs_path
   user "otrs"
+  group node['apache']['group']
   action :nothing
 end
 
@@ -36,5 +37,6 @@ execute "DeleteCache" do
   command "bin/otrs.DeleteCache.pl"
   cwd otrs_path
   user "otrs"
+  group node['apache']['group']
   action :nothing
 end

@@ -28,9 +28,12 @@ package "libgd-gd2-perl"
 package "libexpat1-dev"
 # for Net::SSL
 package "libssl-dev"
+# for Archive::Zip
+#package "libarchive-zip-perl"
 
 # Required Perl modules
 %w{
+  Archive::Zip
   Crypt::Eksblowfish::Bcrypt
   GD
   GD::Text
@@ -43,6 +46,8 @@ package "libssl-dev"
   Net::SMTP::SSL
   Net::SMTP::TLS::ButMaintained
   PDF::API2
+  Template
+  Template::Stash::XS
   Text::CSV_XS
   XML::Parser
   YAML::XS

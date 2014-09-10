@@ -1,4 +1,4 @@
-default['otrs']['version'] = "3.3.7"
+default['otrs']['version'] = "4.0.0.beta1"
 
 default['otrs']['fqdn'] = node['fqdn']
 
