@@ -18,5 +18,7 @@ default['otrs']['packages'] = ["iPhoneHandle", "Support"]
 # these are at least the default paths for Debian
 default['otrs']['apache']['ssl_cert'] = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
 default['otrs']['apache']['ssl_key'] = "/etc/ssl/private/ssl-cert-snakeoil.key"
+# source of the vhost template (cookbook name)
+default['otrs']['apache']['vhost_source'] = nil
 
 default['apache']['listen_ports'] = [80, 443]

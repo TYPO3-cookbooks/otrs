@@ -22,6 +22,12 @@ suites:
   - name: default
     run_list:
       - recipe[otrs::default]
+    attributes:
+      otrs:
+#        version: 2.4.15
+#        version: 3.3.15
+        version: 4.0.14
+#        version: 5.0.3
     driver_config:
       network:
       - ["forwarded_port", {guest: 80, host: 8086}]

@@ -26,6 +26,7 @@ package "libapache2-mod-perl2"
 
 # create vhost
 web_app node['otrs']['fqdn'] do
+  cookbook node['otrs']['apache2']['vhost_source'] || cookbook_name
   server_name node['otrs']['fqdn']
   server_aliases ["www.#{node['otrs']['fqdn']}"]
   docroot otrs_path

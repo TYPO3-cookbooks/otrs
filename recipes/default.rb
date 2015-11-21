@@ -29,14 +29,15 @@ include_recipe "otrs::_perl"
 # Download & extract OTRS
 include_recipe "otrs::_install"
 
-# OTRS upgrade
-# are we updating to a newer version?
-if installed? && ! installed_version_matches?(node['otrs']['version'])
-  include_recipe "otrs::_update"
-end
-
 # MySql setup
 include_recipe "otrs::_mysql"
+
+# OTRS upgrade
+# are we updating to a newer version?
+#if installed? && ! installed_version_matches?(node['otrs']['version'])
+#  include_recipe "otrs::_update"
+#end
+
 
 ##########################
 # Configuration files

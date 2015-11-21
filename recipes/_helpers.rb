@@ -26,7 +26,7 @@ execute "SetPermissions" do
 end
 
 execute "RebuildConfig" do
-  command "bin/otrs.RebuildConfig.pl"
+  command node['otrs']['version'].to_i < 5 ? "bin/otrs.RebuildConfig.pl" : "true"
   cwd otrs_path
   user "otrs"
   group node['apache']['group']
@@ -34,7 +34,7 @@ execute "RebuildConfig" do
 end
 
 execute "DeleteCache" do
-  command "bin/otrs.DeleteCache.pl"
+  command node['otrs']['version'].to_i < 5 ? "bin/otrs.DeleteCache.pl" : "true"
   cwd otrs_path
   user "otrs"
   group node['apache']['group']

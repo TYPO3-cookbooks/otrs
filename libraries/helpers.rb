@@ -36,6 +36,16 @@ module OTRS
       installed_version? == version
     end
 
+    # Returns the major version of a given version number (a from a.b.c)
+    #
+    # @return [String]
+    def major_version(version = nil)
+      version ||= installed_version?
+      return "0" if version.nil?
+
+      version.sub(/(\.\d+)+$/, '')
+    end
+
     # Returns the minor version of a given version number (a.b from a.b.c)
     #
     # @return [String]

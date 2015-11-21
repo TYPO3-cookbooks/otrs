@@ -18,18 +18,15 @@
 #
 
 update_type = patchlevel_upgrade?(node['otrs']['version']) ? "patch" : "minor"
-mysql_connection_info = {:host => "localhost", :username => 'root', :password => node['mysql']['server_root_password']}
 
 log "update" do
   message "Updating OTRS from #{installed_version?} to #{node['otrs']['version']} (#{update_type})"
   notifies :reload, "service[apache2]"
 end
 
-mysql_database "DBUpdate-to-#{minor_version(node['otrs']['version'])}" do
-  connection mysql_connection_info
-  database_name "otrs"
-  sql { ::File.open("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}.mysql.sql").read }
-  action :query
+execute "DBUpdate-to-#{minor_version(node['otrs']['version'])}" do
+  command "/usr/bin/mysql -h 127.0.0.1 -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/DBUpdate-to-#{minor_version(node['otrs']['version'])}.mysql.sql"
+  sensitive true
 end
 
 # minor version is 3.2, 3.3 or so..
@@ -37,10 +34,8 @@ bash "#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}
   user node['otrs']['user']
 end
 
-mysql_database "DBUpdate-to-#{minor_version(node['otrs']['version'])}-post" do
-  connection mysql_connection_info
-  database_name "otrs"
-  sql { ::File.open("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}-post.mysql.sql").read }
-  action :query
+execute "DBUpdate-to-#{minor_version(node['otrs']['version'])}-post" do
+  command "/usr/bin/mysql -h 127.0.0.1 -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/DBUpdate-to-#{minor_version(node['otrs']['version'])}-post.mysql.sql"
+  sensitive true
   only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}-post.mysql.sql") }
 end
