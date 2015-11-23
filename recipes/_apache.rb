@@ -2,7 +2,7 @@
 # Cookbook Name:: otrs
 # Recipe:: _apache
 #
-# Copyright 2014, TYPO3 Association
+# Copyright 2015, TYPO3 Association
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+=begin
+#<
+Install and configure Apache HTTPD for OTRS
+#>
+=end
 
 apache_module "ssl"
 

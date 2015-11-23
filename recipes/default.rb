@@ -2,7 +2,7 @@
 # Cookbook Name:: otrs
 # Recipe:: default
 #
-# Copyright 2014, Steffen Gebert / TYPO3 Association
+# Copyright 2015, Steffen Gebert / TYPO3 Association
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 # limitations under the License.
 #
 
+=begin
+#<
+Default recipe that organizes everything. Sets up all components, triggers updates, makes happy.
+Hopefully.
+#>
+=end
+
 ::Chef::Recipe.send(:include, OTRS::Helpers)
 ::Chef::Resource.send(:include, OTRS::Helpers)
 
@@ -29,19 +36,20 @@ include_recipe "otrs::_perl"
 # Download & extract OTRS
 include_recipe "otrs::_install"
 
+##########################
 # MySql setup
 include_recipe "otrs::_mysql"
-
-# OTRS upgrade
-# are we updating to a newer version?
-#if installed? && ! installed_version_matches?(node['otrs']['version'])
-#  include_recipe "otrs::_update"
-#end
-
 
 ##########################
 # Configuration files
 include_recipe "otrs::_config"
+
+##########################
+# OTRS upgrade
+# are we updating to a newer version?
+if node['otrs']['upgrade']['automatic'] && installed? && ! installed_version_matches?(node['otrs']['version'])
+  include_recipe "otrs::_update"
+end
 
 ############################
 # OTRS helper scripts

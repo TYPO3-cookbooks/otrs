@@ -2,7 +2,7 @@
 # Cookbook Name:: otrs
 # Recipe:: _cronjobs
 #
-# Copyright 2014, TYPO3 Association
+# Copyright 2015, TYPO3 Association
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+=begin
+#<
+Setup OTRS cron jobs
+#>
+=end
 
 if node['otrs']['version'].to_i < 5
 
@@ -104,13 +110,28 @@ if node['otrs']['version'].to_i < 5
 else
 
   # OTRS starting from version 5 has this Daemon
-  cron_d "Daemon" do
+  cron_d "otrs-daemon" do
     minute "*/5"
     command "#{otrs_path}/bin/otrs.Daemon.pl start >> /dev/null"
     user "otrs"
   end
   link "#{otrs_path}/var/cron/otrs_daemon" do
     to "#{otrs_path}/var/cron/otrs_daemon.dist"
+  end
+
+  # Backup Cron Job
+  directory "/var/backups/otrs" do
+    recursive true
+    owner "otrs"
+    recursive
+    action :create
+  end
+
+  cron_d "otrs-backup" do
+    minute "10"
+    hour "0"
+    command "#{otrs_path}/scripts/backup.pl -d /var/backups/otrs -t nofullbackup -r 3"
+    user "otrs"
   end
 
 end

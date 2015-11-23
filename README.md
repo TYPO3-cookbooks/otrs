@@ -1,66 +1,58 @@
-Description
-===========
+# Description
 
 This cookbook deploys OTRS (Open Ticket Request System) through Chef.
 
-Apache HTTPD as well as MySQL is automatically installed an configured.
+Apache HTTPD as well as MySQL are automatically installed an configured.
 
-
-Requirements
-============
-
-Platform
---------
-
-* Debian, Ubuntu
-* others untested, but could work
-
-Mail Server
------------
+Further, automatic updates (by executing OTRS' update scripts) are supported.
 
 Please install your preferred MTA (e.g. Postfix) on your own.
+# Requirements
 
+## Platform:
 
-Attributes
-==========
+* debian
 
-* `node['otrs']['version']` - Version of OTRS to deploy
-* `node['otrs']['fqdn']` - Hostname used by OTRS
-* `node['otrs']['prefix']` - File system path to install OTRS to (default `/opt`)
+## Cookbooks:
 
-* `node['otrs']['kernel_config']['organization']` - Organization.
-* `node['otrs']['kernel_config']['email']` - Admin email address.
-* `node['otrs']['kernel_config']['system_id']` - System ID that should be more or less unique.
+* apache2 (= 3.1.0)
+* build-essential (= 2.0.6)
+* cron (= 1.4.3)
+* database (= 2.3.1)
+* mysql (= 5.5.4)
+* perl (= 1.2.4)
 
-* `node['otrs']['database']['host']` - Database host
-* `node['otrs']['database']['user']` - Database user
-* `node['otrs']['database']['password']` - Database password
-* `node['otrs']['database']['name']` - Database name
+# Attributes
 
+* `node['otrs']['version']` - OTRS version to install. Defaults to `5.0.3`.
+* `node['otrs']['fqdn']` - Fully qualified domain name. Defaults to `node['fqdn']`.
+* `node['otrs']['prefix']` - Installation path. Defaults to `/opt`.
+* `node['otrs']['database']['host']` - Database host. Defaults to `localhost`.
+* `node['otrs']['database']['user']` - Database user. Defaults to `otrs`.
+* `node['otrs']['database']['password']` - Database password. Defaults to `nil`.
+* `node['otrs']['database']['name']` - Database name. Defaults to `otrs`.
+* `node['otrs']['upgrade']['automatic']` - Perform automatic updates? If `false`, the update scripts have to be run manually. Defaults to `true`.
+* `node['otrs']['kernel_config']['email']` - Admin email address. Defaults to `otrs@otrs.example.org`.
+* `node['otrs']['kernel_config']['organization']` - Organization name. Defaults to `Example Association`.
+* `node['otrs']['kernel_config']['system_id']` - OTRS System ID, will be generated automatically, if `nil`. Defaults to `nil`.
+* `node['otrs']['packages']` - OTRS Packages to install. Defaults to `[ ... ]`.
+* `node['otrs']['apache']['ssl_cert']` - SSL certificate path (works on Debian). Defaults to `/etc/ssl/certs/ssl-cert-snakeoil.pem`.
+* `node['otrs']['apache']['ssl_key']` - SSL key path (works on Debian). Defaults to `/etc/ssl/private/ssl-cert-snakeoil.key`.
+* `node['otrs']['apache']['vhost_source']` - Source cookbook of the Apache vhost template. Defaults to `nil`.
+* `node['apache']['listen_ports']` - Ports to which apache should listen to. Defaults to `[ ... ]`.
 
-Usage
-=====
+# Recipes
 
-* If you modify the SysConfig through the OTRS user interface, make sure to export the new configuration and put it into `templates/host-otrs.example.com/SysConfig.pm`, as it will otherwise be overwritten or lost during an upgrade.
-* Patch-level updates of OTRS should work flawlessly.
-* Minor updates are detected and the DBUpdate scripts are executed. This might work, sometimes missing DB indexes make the update fail.
+* [otrs::default](#otrsdefault) - Default recipe that organizes everything.
 
+## otrs::default
 
-License and Authors
-===================
+Default recipe that organizes everything. Sets up all components, triggers updates, makes happy.
+Hopefully.
 
-Author:: Steffen Gebert <steffen.gebert@typo3.org>
+# License and Maintainer
 
-Copyright:: 2012-2014, Steffen Gebert / TYPO3 Association
+Maintainer:: TYPO3 Association (<steffen.gebert@typo3.org>)
+Source:: https://github.com/TYPO3-cookbooks/otrs
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+License:: Apache 2.0

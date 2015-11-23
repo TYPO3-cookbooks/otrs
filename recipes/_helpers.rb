@@ -2,7 +2,7 @@
 # Cookbook Name:: otrs
 # Recipe:: _helpers
 #
-# Copyright 2014, TYPO3 Association
+# Copyright 2015, TYPO3 Association
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,16 @@
 # limitations under the License.
 #
 
+=begin
+#<
+Some helper resources that are notified at other places (SetPermissions.pl, etc.)
+#>
+=end
+
 # Set file system permissions
+set_permissions_file = (node['otrs']['version'].to_i < 3) ? "bin/SetPermissions.pl" : "bin/otrs.SetPermissions.pl"
 execute "SetPermissions" do
-  command "bin/otrs.SetPermissions.pl #{otrs_path}-#{node['otrs']['version']} --otrs-user=otrs --otrs-group=#{node['apache']['group']} --web-user=#{node['apache']['user']} --web-group=#{node['apache']['group']}"
+  command "#{set_permissions_file} #{otrs_path}-#{node['otrs']['version']} --otrs-user=otrs --otrs-group=#{node['apache']['group']} --web-user=#{node['apache']['user']} --web-group=#{node['apache']['group']}"
   cwd otrs_path
   user "root"
   action :nothing
@@ -34,7 +41,7 @@ execute "RebuildConfig" do
 end
 
 execute "DeleteCache" do
-  command node['otrs']['version'].to_i < 5 ? "bin/otrs.DeleteCache.pl" : "true"
+  command (node['otrs']['version'].to_i == 3 || node['otrs']['version'].to_i == 4) ? "bin/otrs.DeleteCache.pl" : "true"
   cwd otrs_path
   user "otrs"
   group node['apache']['group']

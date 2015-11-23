@@ -2,7 +2,7 @@
 # Cookbook Name:: otrs
 # Recipe:: _install
 #
-# Copyright 2014, TYPO3 Association
+# Copyright 2015, TYPO3 Association
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+=begin
+#<
+Deployment of the OTRS application itself. This will download the .tar.gz,
+extract it to the given prefix (i.e. /opt/otrs-x.y.z) and symlink it to
+<prefix>/otrs.
+#>
+=end
 
 # create a unix user account for OTRS
 user "otrs" do
@@ -38,13 +46,13 @@ end
 # Extract downloaded file to #{node['otrs']['prefix']}/otrs-x.y.z/
 script "extract" do
   interpreter "bash"
-  user "root"
+  code "tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node['otrs']['version']}.tar.gz"
   cwd node['otrs']['prefix']
+  user "root"
   action :nothing
-  code <<-EOH
-  tar xfz #{Chef::Config[:file_cache_path]}/otrs-#{node['otrs']['version']}.tar.gz
-  EOH
-  notifies :run, "execute[SetPermissions]"
+  notifies :create, "link[#{otrs_path}]",         :immediately # the order here matters..
+  notifies :create, "template[Kernel/Config.pm]", :immediately # config has to exist,
+  notifies :run,    "execute[SetPermissions]",    :immediately # before SetPermissions is run
 end
 
 # Create symlink from otrs/ to otrs-a.b.c./

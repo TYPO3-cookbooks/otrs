@@ -17,25 +17,70 @@
 # limitations under the License.
 #
 
-update_type = patchlevel_upgrade?(node['otrs']['version']) ? "patch" : "minor"
+=begin
+#<
+OTRS in-place upgrades
+======================
 
+This recipe feels a bit hacky, but it seems to do its job
+as long as there are only two (or three) steps in the upgrade
+process: DBUpdate*.sql, DBUpdate*.pl, (DBUpdate*-post.sql)
+
+File name structure:
+OTRS <= 3.x used DBUpdate-to-<major>.<minor>.mysql.sql format
+OTRS >= 4.x uses DBUpdate-to-<major>.mysql.sql format
+handle both here, just execute what exists :-)
+#>
+=end
+
+version = node['otrs']['version']
 log "update" do
-  message "Updating OTRS from #{installed_version?} to #{node['otrs']['version']} (#{update_type})"
+  message "Updating OTRS from #{installed_version?} to #{version}"
   notifies :reload, "service[apache2]"
 end
 
-execute "DBUpdate-to-#{minor_version(node['otrs']['version'])}" do
-  command "/usr/bin/mysql -h 127.0.0.1 -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/DBUpdate-to-#{minor_version(node['otrs']['version'])}.mysql.sql"
+##############################
+# DBUpdate-to-X(.Y).mysql.sql
+##############################
+execute "DBUpdate-to-#{major_version(version)}.sql" do
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/DBUpdate-to-#{major_version(version)}.mysql.sql"
   sensitive true
+  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{major_version(version)}.mysql.sql") }
 end
 
-# minor version is 3.2, 3.3 or so..
-bash "#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}.pl" do
-  user node['otrs']['user']
+execute "DBUpdate-to-#{minor_version(version)}.sql" do
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/DBUpdate-to-#{minor_version(version)}.mysql.sql"
+  sensitive true
+  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(version)}.mysql.sql") }
 end
 
-execute "DBUpdate-to-#{minor_version(node['otrs']['version'])}-post" do
-  command "/usr/bin/mysql -h 127.0.0.1 -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/database/DBUpdate-to-#{minor_version(node['otrs']['version'])}-post.mysql.sql"
+##############################
+# DBUpdate-to-X(.Y).pl
+##############################
+execute "DBUpdate-to-#{major_version(version)}.pl" do
+  command "#{otrs_path}/scripts/DBUpdate-to-#{major_version(version)}.pl"
   sensitive true
-  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(node['otrs']['version'])}-post.mysql.sql") }
+  user "otrs"
+  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{major_version(version)}.pl") }
+end
+
+execute "DBUpdate-to-#{minor_version(version)}.pl" do
+  command "#{otrs_path}/scripts/DBUpdate-to-#{minor_version(version)}.pl"
+  sensitive true
+  user "otrs"
+  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(version)}.pl") }
+end
+
+##############################
+# DBUpdate-to-X(.Y)-post.mysq.sql
+##############################
+execute "DBUpdate-to-#{major_version(version)}-post.sql" do
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/DBUpdate-to-#{major_version(version)}-post.mysql.sql"
+  sensitive true
+  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{major_version(version)}-post.mysql.sql") }
+end
+execute "DBUpdate-to-#{minor_version(version)}-post.sql" do
+  command "/usr/bin/mysql -u root #{node['otrs']['database']['name']} -p#{node['mysql']['server_root_password']} < #{otrs_path}/scripts/DBUpdate-to-#{minor_version(version)}-post.mysql.sql"
+  sensitive true
+  only_if { ::File.exists?("#{otrs_path}/scripts/DBUpdate-to-#{minor_version(version)}-post.mysql.sql") }
 end
