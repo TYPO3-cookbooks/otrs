@@ -23,14 +23,16 @@ Installs the MySQL server and sets up the data base.
 #>
 =end
 
+# generate the password
+::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
+node.set_unless['otrs']['database']['password']    = secure_password
+node.set_unless['mysql']['server_root_password']   = secure_password
+node.set_unless['mysql']['server_debian_password'] = secure_password
+
 # Install MySQL server
 include_recipe "mysql::server"
 include_recipe "mysql::client"
 include_recipe "database::mysql"
-
-# generate the password
-::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
-node.set_unless['otrs']['database']['password'] = secure_password
 
 mysql_connection_info = { :host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password'] }
 
