@@ -70,4 +70,6 @@ end
 include_recipe "otrs::_apache"
 # Cron jobs
 include_recipe "otrs::_cronjobs"
+# GnuPG
+include_recipe "otrs::_gnupg"
 
