@@ -19,7 +19,7 @@ Please install your preferred MTA (e.g. Postfix) on your own.
 * build-essential (= 2.0.6)
 * cron (= 1.4.3)
 * database (= 2.3.1)
-* mysql (= 5.5.4)
+* mysql (= 5.6.3)
 * perl (= 1.2.4)
 
 # Attributes
@@ -49,6 +49,19 @@ Please install your preferred MTA (e.g. Postfix) on your own.
 
 Default recipe that organizes everything. Sets up all components, triggers updates, makes happy.
 Hopefully.
+
+Application Data
+----------------
+
+Application data resides in the following locations:
+
+- MySQL data base (including article and attachments)
+- Config: _SysConfig_ (can be imported/exported from the web interface) is stored in `/opt/otrs/Kernel/Config/Files/ZZZAuto.pm`
+
+Backups
+-------
+
+Backups are created every night (in `recipes/_cronjobs.rb`) to `/var/backups/otrs/`.
 
 # License and Maintainer
 
