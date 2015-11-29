@@ -14,8 +14,9 @@
   DirectoryIndex index.pl index.html index.html
  
   SSLEngine on
-  SSLCertificateFile    <%= node[:otrs][:apache][:ssl_cert] %>
-  SSLCertificateKeyFile <%= node[:otrs][:apache][:ssl_key] %>
+  SSLCertificateFile       <%= node[:otrs][:apache][:ssl_cert] %>
+  SSLCertificateChainFile  <%= node[:otrs][:apache][:ssl_cert] %>
+  SSLCertificateKeyFile    <%= node[:otrs][:apache][:ssl_key] %>
   
   LogLevel info
   ErrorLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-error.log
