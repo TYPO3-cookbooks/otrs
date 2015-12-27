@@ -36,13 +36,6 @@ include_recipe "database::mysql"
 
 mysql_connection_info = { :host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password'] }
 
-template "/etc/mysql/conf.d/tuning.cnf" do
-  owner "mysql"
-  owner "mysql"
-  source "mysql_tuning.cnf.erb"
-  notifies :restart, "mysql_service[default]"
-end
-
 # create otrs database
 mysql_database "otrs" do
   connection mysql_connection_info
