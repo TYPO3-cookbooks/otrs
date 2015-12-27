@@ -45,8 +45,8 @@ end
 # stop the OTRS daemon. We will not start it, as it has to run as
 # otrs user. The cron job will restart it for us!
 service "otrs.Daemon.pl" do
-  start_command "su -c #{otrs_path}/bin/otrs.Daemon.pl start -s /bin/bash otrs"
-  stop_command  "su -c #{otrs_path}/bin/otrs.Daemon.pl stop -s /bin/bash otrs"
+  start_command "su -c \"#{otrs_path}/bin/otrs.Daemon.pl start\" -s /bin/bash otrs"
+  stop_command  "su -c \"#{otrs_path}/bin/otrs.Daemon.pl stop\" -s /bin/bash otrs"
   supports :start => true, :stop => true
   action :stop
 end
