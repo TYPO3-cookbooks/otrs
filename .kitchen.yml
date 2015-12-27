@@ -4,17 +4,9 @@ driver:
 
 provisioner:
   name: chef_zero
-  attributes:
-    otrs:
-      database:
-        password: otrs
-    mysql:
-      server_debian_password: "foo"
-      server_root_password: "foo"
-      server_repl_password: "foo"
 
 platforms:
-  - name: debian-7.4
+  - name: debian-7.8
     run_list:
     - recipe[apt::default]
 
@@ -24,10 +16,12 @@ suites:
       - recipe[otrs::default]
     attributes:
       otrs:
-        version: 3.0.22
 #        version: 2.4.15
+#        version: 3.0.22
+        version: 3.2.17
 #        version: 3.3.15
         version: 4.0.14
+#        version: 5.0.1
 #        version: 5.0.3
     driver_config:
       network:

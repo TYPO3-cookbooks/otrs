@@ -60,7 +60,20 @@ module OTRS
     # we do not use Chef::VersionConstraint, as a patch-level downgrade should be also possible
     def patchlevel_upgrade?(to)
       nil unless installed?
-      minor_version(installed_version?) == minor_version(to)
+      major_version(installed_version?) == major_version(to) && minor_version(installed_version?) == minor_version(to)
+    end
+
+    # Checks, if the upgrade from version from to version to is a minor upgrade.
+    def minor_upgrade?(to)
+      nil unless installed?
+      major_version(installed_version?) == major_version(to) && minor_version(installed_version?) != minor_version(to)
+    end
+
+    # Checks, if the upgrade from version from to version to is a major upgrade.
+    def major_upgrade?(to)
+      nil unless installed?
+      major_version(installed_version?) != major_version(to)
     end
   end
+
 end
