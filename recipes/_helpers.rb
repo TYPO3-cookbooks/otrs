@@ -33,7 +33,7 @@ execute "SetPermissions" do
 end
 
 execute "RebuildConfig" do
-  command node['otrs']['version'].to_i < 5 ? "bin/otrs.RebuildConfig.pl" : "true"
+  command node['otrs']['version'].to_i < 5 ? "bin/otrs.RebuildConfig.pl" : "bin/otrs.Console.pl Maint::Config::Rebuild"
   cwd otrs_path
   user "otrs"
   group node['apache']['group']
