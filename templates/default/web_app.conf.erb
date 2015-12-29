@@ -17,7 +17,13 @@
   SSLCertificateFile       <%= node[:otrs][:apache][:ssl_cert] %>
   SSLCertificateChainFile  <%= node[:otrs][:apache][:ssl_cert] %>
   SSLCertificateKeyFile    <%= node[:otrs][:apache][:ssl_key] %>
-  
+
+  SSLProtocol All -SSLv2 -SSLv3
+  SSLHonorCipherOrder On
+  SSLCompression off
+  Header always set Strict-Transport-Security "max-age=15768000"
+  SSLCipherSuite 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA'
+
   LogLevel info
   ErrorLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-error.log
   CustomLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-access.log combined
