@@ -87,6 +87,12 @@ sub Load {
     $Self->{'AdminEmail'} = '<%= node.otrs.kernel_config.email %>';
 
     # ---------------------------------------------------- #
+    # Disable OTRSBusiness::AvailabilityCheck
+    # ---------------------------------------------------- #
+    delete $Self->{"Daemon::SchedulerCronTaskManager::Task"}->{"OTRSBusinessAvailabilityCheck"};
+    delete $Self->{"Daemon::SchedulerCronTaskManager::Task"}->{"OTRSBusinessEntitlementCheck"};
+
+    # ---------------------------------------------------- #
     # ---------------------------------------------------- #
     #                                                      #
     # end of your own config options!!!                    #
