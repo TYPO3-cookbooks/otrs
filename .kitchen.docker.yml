@@ -1,5 +1,6 @@
 driver:
   name: docker
+  use_sudo: false
   provision_command:
     - /usr/bin/apt-get update
     - /usr/bin/apt-get install cron -y
