@@ -1,0 +1,6 @@
+driver:
+  name: docker
+  provision_command:
+    - /usr/bin/apt-get update
+    - /usr/bin/apt-get install cron -y
+
