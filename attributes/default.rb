@@ -38,4 +38,4 @@ default['otrs']['apache']['ssl_key'] = "/etc/ssl/private/ssl-cert-snakeoil.key"
 default['otrs']['apache']['vhost_source'] = nil
 
 #<> Ports to which apache should listen to
-default['apache']['listen_ports'] = [80, 443]
+default['apache']['listen'] = ["*:80", ":443"]
