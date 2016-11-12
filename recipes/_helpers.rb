@@ -26,7 +26,7 @@ Some helper resources that are notified at other places (SetPermissions.pl, etc.
 # Set file system permissions
 set_permissions_file = (node['otrs']['version'].to_i < 3) ? "bin/SetPermissions.pl" : "bin/otrs.SetPermissions.pl"
 execute "SetPermissions" do
-  command "#{set_permissions_file} #{otrs_path}-#{node['otrs']['version']} --otrs-user=otrs --otrs-group=#{node['apache']['group']} --web-user=#{node['apache']['user']} --web-group=#{node['apache']['group']}"
+  command "#{set_permissions_file} #{otrs_path}-#{node['otrs']['version']} --web-group=#{node['apache']['group']}"
   cwd otrs_path
   user "root"
   action :nothing
