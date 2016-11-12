@@ -15,8 +15,6 @@ suites:
     run_list:
       - recipe[otrs::default]
     attributes:
-      otrs:
-        version: 5.0.4
     driver_config:
       network:
       - ["forwarded_port", {guest: 80, host: 8086}]

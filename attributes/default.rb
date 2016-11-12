@@ -1,5 +1,5 @@
 #<> OTRS version to install
-default['otrs']['version'] = "5.0.3"
+default['otrs']['version'] = "5.0.14"
 
 #<> Fully qualified domain name
 default['otrs']['fqdn'] = node['fqdn']
