@@ -23,115 +23,26 @@ Setup OTRS cron jobs
 #>
 =end
 
-if node['otrs']['version'].to_i < 5
+cron_d "otrs-daemon" do
+  minute "*/5"
+  command "#{otrs_path}/bin/otrs.Daemon.pl start >> /dev/null"
+  user "otrs"
+end
+link "#{otrs_path}/var/cron/otrs_daemon" do
+  to "#{otrs_path}/var/cron/otrs_daemon.dist"
+end
 
-  cron_d "DeleteCache" do
-    hour "0"
-    minute "20"
-    weekday "0"
-    command "#{otrs_path}/bin/otrs.DeleteCache.pl --expired >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "LoaderCache" do
-    hour "0"
-    minute "30"
-    weekday "0"
-    command "#{otrs_path}/bin/otrs.LoaderCache.pl -o delete >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "fetchmail" do
-    minute "*/5"
-    command "[ -x /usr/bin/fetchmail ] && /usr/bin/fetchmail -a >> /dev/null"
-    user "otrs"
-    action :nothing
-  end
-  
-  cron_d "fetchmail_ssl" do
-    minute "*/5"
-    command "[ -x /usr/bin/fetchmail ] && /usr/bin/fetchmail -a --ssl >> /dev/null"
-    user "otrs"
-    action :nothing
-  end
-  
-  cron_d "GenericAgent_db" do
-    minute "*/10"
-    command "#{otrs_path}/bin/otrs.GenericAgent.pl -c db >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "GenericAgent" do
-    minute "*/20"
-    command "#{otrs_path}/bin/otrs.GenericAgent.pl >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "PendingJobs" do
-    hour "*/2"
-    minute "45"
-    command "#{otrs_path}/bin/otrs.PendingJobs.pl >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "cleanup" do
-    hour "0"
-    minute "10"
-    command "#{otrs_path}/bin/otrs.cleanup >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "PostMasterMailbox" do
-    minute "*/5"
-    command "#{otrs_path}/bin/otrs.PostMasterMailbox.pl >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "RebuildTicketIndex" do
-    hour "1"
-    minute "1"
-    command "#{otrs_path}/bin/otrs.RebuildTicketIndex.pl >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "DeleteSessionIDs" do
-    hour "*/2"
-    minute "55"
-    command "#{otrs_path}/bin/otrs.DeleteSessionIDs.pl --expired >> /dev/null"
-    user "otrs"
-  end
-  
-  cron_d "UnlockTickets" do
-    minute "35"
-    command "#{otrs_path}/bin/otrs.UnlockTickets.pl --timeout >> /dev/null"
-    user "otrs"
-  end
+# Backup Cron Job
+directory "/var/backups/otrs" do
+  recursive true
+  owner "otrs"
+  recursive
+  action :create
+end
 
-else
-
-  # OTRS starting from version 5 has this Daemon
-  cron_d "otrs-daemon" do
-    minute "*/5"
-    command "#{otrs_path}/bin/otrs.Daemon.pl start >> /dev/null"
-    user "otrs"
-  end
-  link "#{otrs_path}/var/cron/otrs_daemon" do
-    to "#{otrs_path}/var/cron/otrs_daemon.dist"
-  end
-
-  # Backup Cron Job
-  directory "/var/backups/otrs" do
-    recursive true
-    owner "otrs"
-    recursive
-    action :create
-  end
-
-  cron_d "otrs-backup" do
-    minute "10"
-    hour "0"
-    command "#{otrs_path}/scripts/backup.pl -d /var/backups/otrs -t nofullbackup -r 3"
-    user "otrs"
-  end
-
+cron_d "otrs-backup" do
+  minute "10"
+  hour "0"
+  command "#{otrs_path}/scripts/backup.pl -d /var/backups/otrs -t nofullbackup -r 3"
+  user "otrs"
 end

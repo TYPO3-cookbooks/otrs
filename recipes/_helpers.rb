@@ -24,16 +24,15 @@ Some helper resources that are notified at other places (SetPermissions.pl, etc.
 =end
 
 # Set file system permissions
-set_permissions_file = (node['otrs']['version'].to_i < 3) ? "bin/SetPermissions.pl" : "bin/otrs.SetPermissions.pl"
 execute "SetPermissions" do
-  command "#{set_permissions_file} #{otrs_path}-#{node['otrs']['version']} --web-group=#{node['apache']['group']}"
+  command "bin/otrs.SetPermissions.pl #{otrs_path}-#{node['otrs']['version']} --web-group=#{node['apache']['group']}"
   cwd otrs_path
   user "root"
   action :nothing
 end
 
 execute "RebuildConfig" do
-  command node['otrs']['version'].to_i < 5 ? "bin/otrs.RebuildConfig.pl" : "bin/otrs.Console.pl Maint::Config::Rebuild"
+  command "bin/otrs.Console.pl Maint::Config::Rebuild"
   cwd otrs_path
   user "otrs"
   group node['apache']['group']
@@ -41,7 +40,7 @@ execute "RebuildConfig" do
 end
 
 execute "DeleteCache" do
-  command (node['otrs']['version'].to_i == 3 || node['otrs']['version'].to_i == 4) ? "bin/otrs.DeleteCache.pl" : "true"
+  command "bin/otrs.Console.pl Maint::Cache::Delete"
   cwd otrs_path
   user "otrs"
   group node['apache']['group']

@@ -43,15 +43,3 @@ template "Kernel/Config.pm" do
   notifies :run, "execute[DeleteCache]"
   notifies :stop, "service[otrs.Daemon.pl]"
 end
-
-# This file existed only in OTRS <= 4
-template "Kernel/Config/GenericAgent.pm" do
-  path "#{otrs_path}/Kernel/Config/GenericAgent.pm"
-  source "GenericAgent.pm.erb"
-  owner "otrs"
-  group node['apache']['group']
-  mode "0664"
-  action (node['otrs']['version'].to_i < 5) ? :create : :delete
-  notifies :run, "execute[RebuildConfig]"
-  notifies :run, "execute[DeleteCache]"
-end
