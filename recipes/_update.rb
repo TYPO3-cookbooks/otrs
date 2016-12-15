@@ -66,6 +66,7 @@ if File.exists?(old_sysconfig_file)
     content File.read(old_sysconfig_file)
     owner "otrs"
     group node['apache']['group']
+    mode 0660
   end
 end
 

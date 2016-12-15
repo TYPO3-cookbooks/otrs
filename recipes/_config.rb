@@ -23,6 +23,15 @@ Deployment of OTRS Configuration files (Kernel/Config.pm, GenericAgent.pm)
 #>
 =end
 
+# We will not start it, as it has to run as
+# otrs user. The cron job will restart it for us!
+service "otrs.Daemon.pl" do
+  start_command "su -c \"#{otrs_path}/bin/otrs.Daemon.pl start\" -s /bin/bash otrs"
+  stop_command  "su -c \"#{otrs_path}/bin/otrs.Daemon.pl stop\" -s /bin/bash otrs"
+  supports :start => true, :stop => true
+end
+
+
 # install OTRS configuration file
 template "Kernel/Config.pm" do
   path "#{otrs_path}/Kernel/Config.pm"
@@ -32,16 +41,5 @@ template "Kernel/Config.pm" do
   mode "0664"
   notifies :run, "execute[RebuildConfig]"
   notifies :run, "execute[DeleteCache]"
-end
-
-# This file existed only in OTRS <= 4
-template "Kernel/Config/GenericAgent.pm" do
-  path "#{otrs_path}/Kernel/Config/GenericAgent.pm"
-  source "GenericAgent.pm.erb"
-  owner "otrs"
-  group node['apache']['group']
-  mode "0664"
-  action (node['otrs']['version'].to_i < 5) ? :create : :delete
-  notifies :run, "execute[RebuildConfig]"
-  notifies :run, "execute[DeleteCache]"
+  notifies :stop, "service[otrs.Daemon.pl]"
 end
