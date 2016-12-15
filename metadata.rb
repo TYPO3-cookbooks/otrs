@@ -6,7 +6,7 @@ description      "Deploy and configure OTRS (Open Ticket Request System)."
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 source_url       "https://github.com/TYPO3-cookbooks/otrs" if respond_to?(:source_url)
 
-version          "1.2.9"
+version          "2.0.0"
 
 supports         "debian"
 
