@@ -27,14 +27,11 @@ include_recipe "perl"
 
 include_recipe "build-essential"
 
-# for GD
-package "libgd-gd2-perl"
-# for XML::Parser
-package "libexpat1-dev"
-# for Net::SSL
-package "libssl-dev"
-# for DBI
-package "libdbi-perl"
+# for GD:          libgd-gd2-perl
+# for XML::Parser: libexpat1-dev
+# for Net::SSL:    libssl-dev
+# for DBI:         libdbi-perl
+package ["libgd-gd2-perl", "libexpat1-dev", "libssl-dev", "libdbi-perl"]
 
 # Required Perl modules
 %w{
