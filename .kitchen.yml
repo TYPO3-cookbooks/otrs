@@ -26,6 +26,8 @@ suites:
       mysql:
         server_root_password: root
         server_repl_password: repl
+      apt:
+        compile_time_update: true
     driver_config:
       network:
       - ["private_network", {ip: "192.168.33.34"}]
