@@ -20,6 +20,7 @@ suites:
   - name: default
     run_list:
       - recipe[otrs::default]
+      - recipe[otrs_test::hostname]
     attributes:
       otrs:
         fqdn: otrs.vagrant
