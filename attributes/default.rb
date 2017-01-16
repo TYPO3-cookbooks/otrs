@@ -36,3 +36,6 @@ default['otrs']['apache']['ssl_key'] = "/etc/ssl/private/ssl-cert-snakeoil.key"
 
 #<> Source cookbook of the Apache vhost template
 default['otrs']['apache']['vhost_source'] = nil
+
+#<> We need build-essentials to compile chef_gem[mysql] dependencies
+default['build-essential']['compile_time'] = true
