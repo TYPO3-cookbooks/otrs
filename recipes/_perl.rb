@@ -33,8 +33,8 @@ package "libgd-gd2-perl"
 package "libexpat1-dev"
 # for Net::SSL
 package "libssl-dev"
-# for Archive::Zip
-#package "libarchive-zip-perl"
+# for DBI
+package "libdbi-perl"
 
 # Required Perl modules
 %w{
