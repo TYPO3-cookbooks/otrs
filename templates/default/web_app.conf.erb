@@ -1,32 +1,17 @@
 <VirtualHost *:80>
   ServerName <%= @params[:server_name] %>
   ServerAlias <% @params[:server_aliases].each do |a| %><%= "#{a}" %> <% end %>
-  
-  RewriteEngine On
-  RewriteRule ^/(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
-</VirtualHost>
-
-<VirtualHost *:443>
-  ServerName <%= @params[:server_name] %>
-  ServerAlias <% @params[:server_aliases].each do |a| %><%= "#{a}" %> <% end %>
   DocumentRoot <%= node[:otrs][:prefix] %>/otrs/var/httpd/htdocs/
   
-  DirectoryIndex index.pl index.html index.html
- 
-  SSLEngine on
-  SSLCertificateFile       <%= node[:otrs][:apache][:ssl_cert] %>
-  SSLCertificateChainFile  <%= node[:otrs][:apache][:ssl_cert] %>
-  SSLCertificateKeyFile    <%= node[:otrs][:apache][:ssl_key] %>
-
-  SSLProtocol All -SSLv2 -SSLv3
-  SSLHonorCipherOrder On
-  SSLCompression off
-  Header always set Strict-Transport-Security "max-age=15768000"
-  SSLCipherSuite 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!ECDSA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA'
+  DirectoryIndex index.pl index.html
 
   LogLevel info
   ErrorLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-error.log
   CustomLog <%= node[:apache][:log_dir] %>/<%= @params[:name] %>-access.log combined
+
+  <Location />
+    Require all granted
+  </Location>
 
   # --
   # added for OTRS (http://otrs.org/)
@@ -62,8 +47,7 @@
         Options +ExecCGI
         PerlOptions +ParseHeaders
         PerlOptions +SetupEnv
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Location>
 
     # set mod_perl2 option for generic interface
@@ -77,13 +61,11 @@
   <Directory "<%= node[:otrs][:prefix] %>/otrs/bin/cgi-bin/">
     AllowOverride None
     Options +ExecCGI -Includes
-    Order allow,deny
-    Allow from all
+    Require all granted
   </Directory>
   <Directory <%= node[:otrs][:prefix] %>/otrs/var/httpd/htdocs/">
     AllowOverride None
-    Order allow,deny
-    Allow from all
+    Require all granted
   </Directory>
 
   <IfModule mod_headers.c>
