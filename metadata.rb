@@ -10,9 +10,10 @@ version          "2.0.0"
 
 supports         "debian"
 
-depends          "apache2"                     # tested with 3.1.0
+depends          "t3-mysql",        "~> 0.1.3"
+
+depends          "database",        "= 1.3.12"
+depends          "apache2"                     # tested with 3.2.2
 depends          "build-essential"             # tested with 2.0.6
 depends          "cron"                        # tested with 1.4.3
-depends          "database",        "~> 2.3.1" # tested with 2.3.1
-depends          "mysql",           "< 6.0"    # tested with 5.6.3
 depends          "perl"                        # tested with 2.0.0
