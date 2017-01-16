@@ -21,6 +21,13 @@ suites:
     run_list:
       - recipe[otrs::default]
     attributes:
+      otrs:
+        fqdn: otrs.vagrant
+        database:
+          password: otrs
+      mysql:
+        server_root_password: root
+        server_repl_password: repl
     driver_config:
       network:
       - ["forwarded_port", {guest: 80, host: 8086}]
