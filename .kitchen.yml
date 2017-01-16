@@ -9,9 +9,6 @@ verifier:
   name: inspec
 
 platforms:
-  - name: debian-7.11
-    run_list:
-      - recipe[apt::default]
   - name: debian-8.5
     run_list:
       - recipe[apt::default]
@@ -31,6 +28,4 @@ suites:
         server_repl_password: repl
     driver_config:
       network:
-      - ["forwarded_port", {guest: 80, host: 8086}]
-      - ["forwarded_port", {guest: 443, host: 8087}]
       - ["private_network", {ip: "192.168.33.34"}]
