@@ -23,11 +23,9 @@ Install and configure Apache HTTPD for OTRS
 #>
 =end
 
-apache_module "ssl"
-
-# set up mod_perl2
+# set up mod_perl
+include_recipe "apache2::mod_perl"
 cpan_module "Apache::DBI"
-package "libapache2-mod-perl2"
 
 
 # create vhost

@@ -36,6 +36,3 @@ default['otrs']['apache']['ssl_key'] = "/etc/ssl/private/ssl-cert-snakeoil.key"
 
 #<> Source cookbook of the Apache vhost template
 default['otrs']['apache']['vhost_source'] = nil
-
-#<> Ports to which apache should listen to
-default['apache']['listen'] = ["*:80", ":443"]
