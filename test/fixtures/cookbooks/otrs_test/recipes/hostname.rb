@@ -14,5 +14,4 @@ ruby_block "update /etc/hosts" do
                                "#{node['ipaddress']} #{node['hostname']} otrs.vagrant")
     fe.write_file
   end
-  not_if { Resolv.getaddress('otrs.vagrant') rescue false }
 end
