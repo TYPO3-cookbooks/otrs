@@ -43,6 +43,6 @@ end
 cron_d "otrs-backup" do
   minute "10"
   hour "0"
-  command "#{otrs_path}/scripts/backup.pl -d /var/backups/otrs -t nofullbackup -r 3"
+  command "#{otrs_path}/scripts/backup.pl -d /var/backups/otrs -t nofullbackup -r 0"
   user "otrs"
 end
